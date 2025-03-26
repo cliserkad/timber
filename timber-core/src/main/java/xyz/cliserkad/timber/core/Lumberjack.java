@@ -25,6 +25,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 
 	static {
 		MessageUtils.setColorEnabled(true);
+		// FIXME: getting level from system properties isn't the best idea
 		OUTPUT_LEVEL = System.getProperties().getProperty("timber.level") != null ? Level.values()[Integer.parseInt(System.getProperties().getProperty("timber.level"))] : Level.INFO;
 	}
 
@@ -63,7 +64,20 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 				break;
 			}
 		}
-		System.out.println("[" + prepend + "] " + format(args));
+		// add callsite info if debug is enabled
+		if(isLevelEnabled(Level.DEBUG))
+			System.out.println("[" + prepend + "] " + format(args) + " " + logCallsiteInfo());
+		else
+			System.out.println("[" + prepend + "] " + format(args));
+	}
+
+	private static String logCallsiteInfo() {
+		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		final StackTraceElement caller = stackTrace[3];
+		if(!Thread.currentThread().getName().equals("main"))
+			return "(" + caller.getFileName() + ":" + caller.getLineNumber() + ") {" + Thread.currentThread().getName() + "}";
+		else
+			return "(" + caller.getFileName() + ":" + caller.getLineNumber() + ")";
 	}
 
 	public static CombinedLogger combinedLogger() {
@@ -104,6 +118,10 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 		throw new NoSuchMethodException("Method not found: " + requested.getName());
 	}
 
+	public static boolean isLevelEnabled(Level level) {
+		return level.ordinal() <= OUTPUT_LEVEL.ordinal();
+	}
+
 	/**
 	 * Interprets incoming method calls from one of the interfaces specified by CombinedLogger. This is the main entry point for logging, if the consumer is unaware of this implementing class.
 	 *
@@ -120,8 +138,8 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 		 */
 		if(method.getName().matches("is(Trace|Debug|Info|Warn|Error)Enabled")) {
 			final String levelName = method.getName().substring(2).toUpperCase();
-			final int levelOrdinal = Level.valueOf(levelName).ordinal();
-			return OUTPUT_LEVEL.ordinal() <= levelOrdinal;
+			final Level level = Level.valueOf(levelName);
+			return isLevelEnabled(level);
 		}
 
 		if(method.getName().matches("trace|debug|info|warn|error")) {

@@ -6,9 +6,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.plugins.annotations.*;
 
-import java.util.Properties;
-import java.util.logging.Level;
-
 @Mojo(
 	name = "level",
 	defaultPhase = LifecyclePhase.NONE,

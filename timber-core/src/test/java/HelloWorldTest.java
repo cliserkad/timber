@@ -10,8 +10,6 @@ public class HelloWorldTest {
 	public void testHelloWorld() {
 		Lumberjack.log(Level.INFO, "Hello, World!");
 		Lumberjack.log(Level.DEBUG, "Hi hi hi");
-		Lumberjack.log(Level.ERROR, "some error");
-		Lumberjack.log(Level.WARN, "some warning");
 	}
 
 }
