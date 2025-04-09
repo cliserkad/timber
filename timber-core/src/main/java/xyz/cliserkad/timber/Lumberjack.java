@@ -1,9 +1,8 @@
-package xyz.cliserkad.timber.core;
+package xyz.cliserkad.timber;
 
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
@@ -12,7 +11,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * Attempts to route logging to Maven Plugin / Mojo output during Maven builds. Falls back to System.out if routing fails.
@@ -22,11 +21,21 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	private static final Lumberjack INSTANCE = new Lumberjack();
 	private static final CombinedLogger PROXY = (CombinedLogger) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { CombinedLogger.class }, INSTANCE);
 	private static final Level OUTPUT_LEVEL;
+	private static final TypeMap<Filter<?>> FILTERS = new TypeMap<>();
 
 	static {
 		MessageUtils.setColorEnabled(true);
 		// FIXME: getting level from system properties isn't the best idea
-		OUTPUT_LEVEL = System.getProperties().getProperty("timber.level") != null ? Level.values()[Integer.parseInt(System.getProperties().getProperty("timber.level"))] : Level.INFO;
+		final String timberLevel = System.getProperty("timber.level");
+		if(timberLevel != null) {
+			OUTPUT_LEVEL = Level.values()[Integer.parseInt(timberLevel)];
+		} else {
+			OUTPUT_LEVEL = Level.INFO;
+		}
+		final MavenLevelFilter levelFilter = new MavenLevelFilter(MavenLevelFilter.Level.fromSFL4JLevel(OUTPUT_LEVEL));
+		FILTERS.put(levelFilter);
+		log(Level.INFO, "Timber logging initialized with level: " + OUTPUT_LEVEL);
+		log(Level.DEBUG, "Timber logging initialized with level: " + levelFilter);
 	}
 
 	private Lumberjack() {
@@ -37,12 +46,30 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 		log(null, args);
 	}
 
+	public static boolean isAllowed(LogEvent event) {
+		for(var filter : FILTERS.entrySet()) {
+			final Class<?> criterionClass = filter.getValue().always().getClass();
+			// TODO: refactor TypeMap
+			if(event.attributes.containsKey(criterionClass)) {
+				if(!filter.getValue().isObjectAllowed(event.attributes.get(criterionClass))) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	public static void log(Level level, Object... args) {
 		if(level == null)
 			level = Level.INFO;
-		if(level.ordinal() > OUTPUT_LEVEL.ordinal()) {
+
+		LogEvent event = new LogEvent(args);
+		event.attributes.put(MavenLevelFilter.Level.fromSFL4JLevel(level));
+
+		if(!isAllowed(event)) {
 			return;
 		}
+
 		final String prepend;
 		switch(level) {
 			case TRACE:
@@ -66,9 +93,9 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 		}
 		// add callsite info if debug is enabled
 		if(isLevelEnabled(Level.DEBUG))
-			System.out.println("[" + prepend + "] " + format(args) + " " + logCallsiteInfo());
+			System.out.println("[" + prepend + "] " + event + " " + logCallsiteInfo());
 		else
-			System.out.println("[" + prepend + "] " + format(args));
+			System.out.println("[" + prepend + "] " + event);
 	}
 
 	private static String logCallsiteInfo() {
@@ -152,33 +179,6 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 		} catch(InvocationTargetException e) {
 			throw e.getCause();
 		}
-	}
-
-	public static String format(Object[] args) {
-		if(args.length == 0)
-			return "";
-
-		args[0] = args[0].toString();
-		if(args.length == 1)
-			return (String) args[0];
-
-		final FormattingTuple tuple;
-		if(args.length == 2) {
-			if(args[1] instanceof Object[]) {
-				tuple = MessageFormatter.arrayFormat((String) args[0], (Object[]) args[1]);
-			} else {
-				tuple = MessageFormatter.format((String) args[0], args[1]);
-			}
-		} else if(args.length == 3) {
-			if(args[1] instanceof Object[] && args[2] instanceof Throwable) {
-				tuple = MessageFormatter.arrayFormat((String) args[0], (Object[]) args[1], (Throwable) args[2]);
-			} else {
-				tuple = MessageFormatter.format((String) args[0], args[1], args[2]);
-			}
-		} else {
-			return Arrays.toString(args);
-		}
-		return tuple.getMessage();
 	}
 
 	@Override
