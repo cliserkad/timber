@@ -1,8 +1,7 @@
-package test.java;
+package xyz.cliserkad.timber;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.event.Level;
-import xyz.cliserkad.timber.Lumberjack;
 
 public class HelloWorldTest {
 
