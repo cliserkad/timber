@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>xyz.cliserkad.it</groupId>
+    <artifactId>level-detection</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <!--
+                Runs timber:level in the validate phase.
+                This detects the current Maven log level and writes it to timber.level.
+            -->
+            <plugin>
+                <groupId>xyz.cliserkad</groupId>
+                <artifactId>timber-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <executions>
+                    <execution>
+                        <id>detect-level</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>level</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                Echoes timber.level at WARNING so it appears in the build log
+                regardless of the active Maven log level.  The verify script
+                reads this line to confirm the detected level is correct.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>echo-timber-level</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="DETECTED timber.level=${timber.level}" level="warning"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

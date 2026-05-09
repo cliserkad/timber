@@ -1,0 +1,21 @@
+String log = new String(java.nio.file.Files.readAllBytes(
+    new java.io.File(basedir, "build.log").toPath()), "UTF-8");
+
+// In quiet mode all log output (including [WARNING]) is suppressed — confirm no [INFO] lines.
+if (log.contains("[INFO]")) {
+    throw new RuntimeException("Expected no [INFO] output in quiet build — build log:\n" + log);
+}
+
+// The antrun task wrote timber.level to a file (file I/O bypasses the logging system).
+java.io.File levelFile = new java.io.File(new java.io.File(basedir, "target"), "timber-level.txt");
+if (!levelFile.exists()) {
+    throw new RuntimeException("timber-level.txt not found — antrun did not run");
+}
+String level = new String(java.nio.file.Files.readAllBytes(levelFile.toPath()), "UTF-8").trim();
+
+// Quiet mode shows only errors: isErrorEnabled=true, all others false → level 0.
+if (!level.equals("0")) {
+    throw new RuntimeException("Expected timber.level=0 in quiet mode, got: " + level);
+}
+
+return true;

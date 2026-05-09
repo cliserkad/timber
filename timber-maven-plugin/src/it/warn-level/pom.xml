@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>xyz.cliserkad.it</groupId>
+    <artifactId>level-detection</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>xyz.cliserkad</groupId>
+                <artifactId>timber-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <executions>
+                    <execution>
+                        <id>detect-level</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>level</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                In quiet mode, Maven only shows ERROR — echo at any log level is swallowed.
+                Writing to a file is independent of the logging system, so it works
+                regardless of the active log level and lets verify.bsh check the result.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>write-timber-level</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="${timber.level}"
+                                      file="${project.build.directory}/timber-level.txt"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

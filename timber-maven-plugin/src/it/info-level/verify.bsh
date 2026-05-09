@@ -1,0 +1,11 @@
+String log = new String(java.nio.file.Files.readAllBytes(
+    new java.io.File(basedir, "build.log").toPath()), "UTF-8");
+
+if (!log.contains("[INFO] Output level: 2")) {
+    throw new RuntimeException("Expected '[INFO] Output level: 2' — build log:\n" + log);
+}
+if (!log.contains("DETECTED timber.level=2")) {
+    throw new RuntimeException("Expected 'DETECTED timber.level=2' — build log:\n" + log);
+}
+
+return true;
