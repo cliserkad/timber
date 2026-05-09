@@ -4,9 +4,6 @@ import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.event.Level;
-import org.slf4j.helpers.FormattingTuple;
-import org.slf4j.helpers.MessageFormatter;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,7 +18,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	private static final Lumberjack INSTANCE = new Lumberjack();
 	private static final CombinedLogger PROXY = (CombinedLogger) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { CombinedLogger.class }, INSTANCE);
 	private static final Level OUTPUT_LEVEL;
-	private static final TypeMap<Filter<?>> FILTERS = new TypeMap<>();
+	private static final FilterSet FILTERS = new FilterSet();
 
 	static {
 		MessageUtils.setColorEnabled(true);
@@ -33,7 +30,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 			OUTPUT_LEVEL = Level.INFO;
 		}
 		final MavenLevelFilter levelFilter = new MavenLevelFilter(MavenLevelFilter.Level.fromSFL4JLevel(OUTPUT_LEVEL));
-		FILTERS.put(levelFilter);
+		FILTERS.add(levelFilter);
 		log(Level.INFO, "Timber logging initialized with level: " + OUTPUT_LEVEL);
 		log(Level.DEBUG, "Timber logging initialized with level: " + levelFilter);
 	}
@@ -47,16 +44,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	public static boolean isAllowed(LogEvent event) {
-		for(var filter : FILTERS.entrySet()) {
-			final Class<?> criterionClass = filter.getValue().always().getClass();
-			// TODO: refactor TypeMap
-			if(event.attributes.containsKey(criterionClass)) {
-				if(!filter.getValue().isObjectAllowed(event.attributes.get(criterionClass))) {
-					return false;
-				}
-			}
-		}
-		return true;
+		return FILTERS.isAllowed(event.attributes);
 	}
 
 	public static void log(Level level, Object... args) {

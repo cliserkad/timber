@@ -10,8 +10,8 @@ public class MavenLevelFilter implements Filter<MavenLevelFilter.Level> {
 	}
 
 	@Override
-	public Level always() {
-		return Level.ERROR;
+	public Class<Level> criterionType() {
+		return Level.class;
 	}
 
 	public MavenLevelFilter(final Level level) {

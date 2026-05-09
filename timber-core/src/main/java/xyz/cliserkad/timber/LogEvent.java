@@ -8,11 +8,11 @@ import java.util.Arrays;
 public class LogEvent {
 
 	public final Object[] args;
-	public final TypeMap<Object> attributes;
+	public final AttributeMap attributes;
 
 	public LogEvent(final Object... args) {
 		this.args = args;
-		this.attributes = new TypeMap<>();
+		this.attributes = new AttributeMap();
 	}
 
 	public static String format(Object[] args) {
