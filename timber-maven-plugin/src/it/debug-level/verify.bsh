@@ -1,12 +1,10 @@
-String log = new String(java.nio.file.Files.readAllBytes(
-    new java.io.File(basedir, "build.log").toPath()), "UTF-8");
-
-// Debug mode enables all four isXEnabled checks: expected level = 3.
-if (!log.contains("Output level: 3")) {
-    throw new RuntimeException("Expected 'Output level: 3' — build log:\n" + log);
+// Surefire is the source of truth: TimberLevelTest captures the System.out
+// PrintStream that Lumberjack writes to and asserts against the level-derived
+// expectations. If surefire failed, this hook would not have been invoked, so
+// the only thing left to confirm is that the test was actually executed.
+java.io.File reportFile = new java.io.File(basedir,
+    "target/surefire-reports/TEST-xyz.cliserkad.it.TimberLevelTest.xml");
+if (!reportFile.exists()) {
+    throw new RuntimeException("Surefire test report missing — TimberLevelTest did not run");
 }
-if (!log.contains("DETECTED timber.level=3")) {
-    throw new RuntimeException("Expected 'DETECTED timber.level=3' — build log:\n" + log);
-}
-
 return true;

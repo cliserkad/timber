@@ -1,21 +1,17 @@
+// Surefire is the source of truth: TimberLevelTest captures the System.out
+// PrintStream that Lumberjack writes to and asserts WARN/INFO/DEBUG are filtered
+// out at timber.level=0 (quiet mode). If surefire failed, this hook would not
+// have been invoked, so the only thing left to confirm is that the test was
+// actually executed and that Maven did honour quiet mode.
+java.io.File reportFile = new java.io.File(basedir,
+    "target/surefire-reports/TEST-xyz.cliserkad.it.TimberLevelTest.xml");
+if (!reportFile.exists()) {
+    throw new RuntimeException("Surefire test report missing — TimberLevelTest did not run");
+}
+
 String log = new String(java.nio.file.Files.readAllBytes(
     new java.io.File(basedir, "build.log").toPath()), "UTF-8");
-
-// In quiet mode all log output (including [WARNING]) is suppressed — confirm no [INFO] lines.
 if (log.contains("[INFO]")) {
     throw new RuntimeException("Expected no [INFO] output in quiet build — build log:\n" + log);
 }
-
-// The antrun task wrote timber.level to a file (file I/O bypasses the logging system).
-java.io.File levelFile = new java.io.File(new java.io.File(basedir, "target"), "timber-level.txt");
-if (!levelFile.exists()) {
-    throw new RuntimeException("timber-level.txt not found — antrun did not run");
-}
-String level = new String(java.nio.file.Files.readAllBytes(levelFile.toPath()), "UTF-8").trim();
-
-// Quiet mode shows only errors: isErrorEnabled=true, all others false → level 0.
-if (!level.equals("0")) {
-    throw new RuntimeException("Expected timber.level=0 in quiet mode, got: " + level);
-}
-
 return true;

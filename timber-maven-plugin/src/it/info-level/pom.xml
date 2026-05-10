@@ -6,11 +6,18 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <plugins>
             <!--
-                Runs timber:level in the validate phase.
-                This detects the current Maven log level and writes it to timber.level.
+                Runs timber:level in the validate phase. Sets the project property
+                timber.level (and the matching session properties), which surefire
+                forwards into the test JVM via systemPropertyVariables below.
             -->
             <plugin>
                 <groupId>xyz.cliserkad</groupId>
@@ -26,30 +33,45 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--
-                Echoes timber.level at WARNING so it appears in the build log
-                regardless of the active Maven log level.  The verify script
-                reads this line to confirm the detected level is correct.
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>echo-timber-level</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <echo message="DETECTED timber.level=${timber.level}" level="warning"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <timber.level>${timber.level}</timber.level>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>xyz.cliserkad</groupId>
+            <artifactId>timber-core</artifactId>
+            <version>@project.version@</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>3.9.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-shared-utils</artifactId>
+            <version>3.3.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
