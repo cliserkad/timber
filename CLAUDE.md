@@ -38,6 +38,7 @@ Two modules:
 `Lumberjack` is the entry point. It implements both `InvocationHandler` and `org.slf4j.ILoggerFactory`. A static `PROXY` is created via `Proxy.newProxyInstance` against `CombinedLogger`, an interface that extends both `org.slf4j.Logger` and `org.apache.maven.plugin.logging.Log`. So a single proxy instance satisfies both SLF4J consumers and Maven plugin consumers without branching.
 
 The `invoke` handler routes by method name:
+
 - `is(Trace|Debug|Info|Warn|Error)Enabled` → `isLevelEnabled(Level)`
 - `trace|debug|info|warn|error` → `log(Level, Object[])`
 - everything else → `forwardImplemented` (reflective lookup of a matching method on `Lumberjack` itself, e.g. `getLogger`)
@@ -57,7 +58,8 @@ The filter system was redesigned to remove a reflection-heavy `TypeMap`/`Filter.
 
 ### Level detection
 
-`LogLevelDetector` (the `timber:level` mojo) probes `getLog().is{Error,Warn,Info,Debug}Enabled()` starting from `-1` and increments per enabled level, yielding 0 (errors only / `-q`), 2 (default INFO), or 3 (`-X` debug). The result is written to `project.properties`, `session.userProperties`, AND `session.systemProperties` under `timber.level`. `Lumberjack`'s static initializer reads `System.getProperty("timber.level")` and indexes `org.slf4j.event.Level.values()` (which is `[ERROR, WARN, INFO, DEBUG, TRACE]`, ordinals 0–4) to set `OUTPUT_LEVEL`. `isLevelEnabled(level)` is `level.ordinal() <= OUTPUT_LEVEL.ordinal()`.
+`LogLevelDetector` (the `timber:level` mojo) probes `getLog().is{Error,Warn,Info,Debug}Enabled()` starting from `-1` and increments per enabled level, yielding 0 (errors only / `-q`), 2 (default INFO), or 3 (`-X` debug). The result is written to `project.properties`, `session.userProperties`, AND `session.systemProperties` under `timber.level`. `Lumberjack`'s static initializer reads `System.getProperty("timber.level")` and indexes `org.slf4j.event.Level.values()` (which
+is `[ERROR, WARN, INFO, DEBUG, TRACE]`, ordinals 0–4) to set `OUTPUT_LEVEL`. `isLevelEnabled(level)` is `level.ordinal() <= OUTPUT_LEVEL.ordinal()`.
 
 ### IT testing pattern
 
@@ -75,3 +77,9 @@ Each IT project must declare `slf4j-api`, `maven-plugin-api`, and `maven-shared-
 - Tabs for indentation in Java sources.
 - Javadoc on public types/methods. Comments lead with the *why* (especially for the proxy/cast tricks).
 - `@SuppressWarnings({"unchecked","rawtypes"})` is acceptable when the cast is structurally guaranteed by the surrounding contract (see `FilterSet.checkFilter`).
+
+## Documentation Instructions
+
+- Always document architectural and implementation analysis, insights, and plans as .md files in /docs
+- Regularly update existing files, especially CLAUDE.md, README.md and /docs/*
+- Preserve the history of the project by continuously moving descriptions of modifications to /docs/history
