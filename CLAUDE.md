@@ -75,6 +75,11 @@ is `[ERROR, WARN, INFO, DEBUG, TRACE]`, ordinals 0–4) to set `OUTPUT_LEVEL`. `
 
 Each IT project must declare `slf4j-api`, `maven-plugin-api`, and `maven-shared-utils` explicitly because timber-core inherits those as `provided` from the parent and so does not export them transitively.
 
+## Give Suggestions
+
+- For project improvements after successful task completion
+- For tools and agent skills to improve output, reduce time required, or limit token use
+
 ## Conventions
 
 - Tabs for indentation in Java sources.
@@ -86,3 +91,4 @@ Each IT project must declare `slf4j-api`, `maven-plugin-api`, and `maven-shared-
 - Always document architectural and implementation analysis, insights, and plans as .md files in /docs
 - Regularly update existing files, especially CLAUDE.md, README.md and /docs/*
 - Preserve the history of the project by continuously moving descriptions of modifications to /docs/history
+- Limit scope creep of each documentation file by externalizing and linking to non-essential sections in new .md files
