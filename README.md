@@ -32,7 +32,10 @@ mvn verify -Dinvoker.skip=true
 - `FilterSet` stores filters keyed by `criterionType()` and only evaluates filters whose criterion type is actually present on the event.
 - `LogEvent` carries the raw arguments plus an `AttributeMap` of typed attributes.
 
-`MavenLevelFilter` is the only built-in `Filter`. It uses its own four-value `Level` enum (DEBUG/INFO/WARN/ERROR) — distinct from `org.slf4j.event.Level` because Maven's logging API doesn't distinguish TRACE from DEBUG. `MavenLevelFilter.Level.fromSFL4JLevel` collapses the two.
+Built-in filters:
+
+- `MavenLevelFilter` — minimum-severity threshold using a four-value `Level` enum (DEBUG/INFO/WARN/ERROR), distinct from `org.slf4j.event.Level` because Maven's logging API doesn't distinguish TRACE from DEBUG. `MavenLevelFilter.Level.fromSFL4JLevel` collapses the two.
+- `StackDepthFilter` — maximum stack depth at which a log call is permitted; deeper helper-of-helper messages are suppressed. Keyed by the singleton `StackDepth` marker that `Lumberjack.log` attaches to every event. Sampling uses `StackWalker` with a limit so deep stacks short-circuit at the threshold.
 
 ### Level detection
 
@@ -73,6 +76,16 @@ public class TenantFilter implements Filter<TenantId> {
 
 }
 ```
+
+### Stack-depth filtering
+
+```java
+// reject any log call whose stack is deeper than 30 frames (including dispatch overhead)
+FilterSet filters = new FilterSet();
+filters.add(new StackDepthFilter(30));
+```
+
+`Lumberjack.log` already attaches `StackDepth.INSTANCE` to every event, so registering a `StackDepthFilter` on the global `FilterSet` is the only step needed. With no filter registered, the marker is inert.
 
 ### `timber:level` mojo
 

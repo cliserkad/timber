@@ -54,7 +54,10 @@ The filter system was redesigned to remove a reflection-heavy `TypeMap`/`Filter.
 - `FilterSet` stores filters keyed by `criterionType()`. `isAllowed(AttributeMap)` only evaluates filters whose criterion type is actually present on the event. The single unchecked cast is in `FilterSet.checkFilter`, justified because the key used to look up the value IS the cast target.
 - `LogEvent` carries `args` plus an `AttributeMap`; callers populate attributes (e.g. `event.attributes.put(MavenLevelFilter.Level.fromSFL4JLevel(level))`) and `Lumberjack.isAllowed(event)` delegates to the `FilterSet`.
 
-`MavenLevelFilter` is the only built-in `Filter`. It uses its own four-value `Level` enum (DEBUG/INFO/WARN/ERROR) — distinct from `org.slf4j.event.Level` because Maven's logging API doesn't distinguish TRACE from DEBUG. `Level.fromSFL4JLevel` collapses the two.
+Built-in filters:
+
+- `MavenLevelFilter` — uses its own four-value `Level` enum (DEBUG/INFO/WARN/ERROR), distinct from `org.slf4j.event.Level` because Maven's logging API doesn't distinguish TRACE from DEBUG. `Level.fromSFL4JLevel` collapses the two.
+- `StackDepthFilter` — keyed by the singleton `StackDepth` marker (which `Lumberjack.log` attaches to every event). Samples the live stack inside `isAllowed` via `StackWalker.walk(s -> s.limit(maxDepth+1).count())` so deep stacks short-circuit at the threshold instead of walking the root. The criterion argument is ignored; the marker only exists to wake the filter up. Design notes: `docs/stack-depth-filter.md`.
 
 ### Level detection
 

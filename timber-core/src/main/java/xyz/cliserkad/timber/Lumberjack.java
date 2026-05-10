@@ -72,6 +72,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 
 		LogEvent event = new LogEvent(args);
 		event.attributes.put(MavenLevelFilter.Level.fromSFL4JLevel(level));
+		event.attributes.put(StackDepth.INSTANCE);
 
 		if(!isAllowed(event)) {
 			return;
