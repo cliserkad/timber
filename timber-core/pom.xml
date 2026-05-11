@@ -34,6 +34,7 @@
 					<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
 					<postBuildHookScript>verify</postBuildHookScript>
 					<showErrors>true</showErrors>
+					<streamLogs>true</streamLogs>
 					<environmentVariables>
 						<revision>${revision}</revision>
 					</environmentVariables>
