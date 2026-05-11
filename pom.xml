@@ -18,7 +18,6 @@
 		<module>timber-core</module>
 	</modules>
 	<properties>
-		<revision>0.0.1</revision>
 		<maven.version>3.9.8</maven.version>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
