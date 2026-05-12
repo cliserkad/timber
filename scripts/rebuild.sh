@@ -1,2 +1,2 @@
-revision=$(git log -1 --format=%ct)
-mvnd -Drevision=$revision verify
+source "$(dirname "$0")/common.sh"
+$maven -Drevision=$revision verify

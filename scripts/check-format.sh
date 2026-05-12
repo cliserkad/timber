@@ -1,6 +1,2 @@
-revision=$(git log -1 --format=%ct)
-maven="mvn"
-if command -v mvnd &>/dev/null; then
-  maven="mvnd"
-fi
+source "$(dirname "$0")/common.sh"
 $maven -Drevision=$revision spotless:check --no-transfer-progress
