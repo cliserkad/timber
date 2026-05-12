@@ -46,7 +46,7 @@
 				<!-- This plugin allows us to use dynamic versions in the parent pom, and deploy as normal -->
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>flatten-maven-plugin</artifactId>
-				<version>1.6.0</version>
+				<version>1.7.3</version>
 				<configuration>
 					<updatePomFile>true</updatePomFile>
 					<flattenMode>resolveCiFriendliesOnly</flattenMode>
@@ -71,7 +71,7 @@
 			<plugin>
 				<groupId>io.github.git-commit-id</groupId>
 				<artifactId>git-commit-id-maven-plugin</artifactId>
-				<version>9.0.1</version>
+				<version>10.0.0</version>
 				<executions>
 					<execution>
 						<id>get-the-git-infos</id>
