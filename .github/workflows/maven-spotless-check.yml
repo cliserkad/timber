@@ -25,4 +25,4 @@ jobs:
           check-latest: false
       - name: mvn spotless check
         # transfer progress is disabled to avoid spamming the log with progress bars
-        run: bash check-format.sh
+        run: bash scripts/check-format.sh

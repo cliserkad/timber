@@ -27,4 +27,4 @@ jobs:
         # we have to do an install for the integration tests to work
       - name: Maven Install
         id: install
-        run: bash build.sh
+        run: bash scripts/build.sh
