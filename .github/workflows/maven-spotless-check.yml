@@ -25,4 +25,4 @@ jobs:
           check-latest: false
       - name: mvn spotless check
         # transfer progress is disabled to avoid spamming the log with progress bars
-        run: mvn clean spotless:check --file pom.xml --no-transfer-progress
+        run: bash check-format.sh
