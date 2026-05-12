@@ -202,6 +202,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 		/**
 		 * see if the current level is greater than the requested level
 		 * this isn't stupid. The library does a similar check
+		 * 
 		 * @see org.slf4j.Logger#isEnabledForLevel(Level)
 		 */
 		if(method.getName().matches("is(Trace|Debug|Info|Warn|Error)Enabled")) {

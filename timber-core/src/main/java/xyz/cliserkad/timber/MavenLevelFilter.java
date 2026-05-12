@@ -45,6 +45,7 @@ public class MavenLevelFilter implements Filter<MavenLevelFilter.Level> {
 	 * Ordinal comparisons ({@code >=}) implement the threshold check.
 	 */
 	public enum Level {
+
 		DEBUG,
 		INFO,
 		WARN,
@@ -73,6 +74,7 @@ public class MavenLevelFilter implements Filter<MavenLevelFilter.Level> {
 		public static Level fromString(final String level) {
 			return fromSFL4JLevel(org.slf4j.event.Level.valueOf(level.toUpperCase()));
 		}
+
 	}
 
 }

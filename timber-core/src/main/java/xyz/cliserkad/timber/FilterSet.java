@@ -19,7 +19,7 @@ public class FilterSet {
 	 * Registers {@code filter}, keyed by {@link Filter#criterionType()}.
 	 * Replaces any previously registered filter for the same criterion type.
 	 *
-	 * @param filter the filter to register; must not be {@code null}
+	 * @param filter      the filter to register; must not be {@code null}
 	 * @param <Criterion> the criterion type of the filter
 	 */
 	public <Criterion> void add(Filter<Criterion> filter) {
@@ -51,7 +51,9 @@ public class FilterSet {
 	 * it is safe because the criterion type is the same key used to retrieve the
 	 * value from the {@link AttributeMap}.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings(
+		{ "unchecked", "rawtypes" }
+	)
 	private static boolean checkFilter(Filter filter, Object raw) {
 		return filter.isAllowed(filter.criterionType().cast(raw));
 	}

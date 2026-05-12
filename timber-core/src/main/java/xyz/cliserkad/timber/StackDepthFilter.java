@@ -6,14 +6,12 @@ package xyz.cliserkad.timber;
  * dispatch frames; configure {@link #maxDepth} accordingly. Roughly six to
  * eight frames of dispatch overhead sit between user code and this filter, so
  * a {@code maxDepth} smaller than that will reject every event.
- *
  * <p>The current depth is sampled inside {@link #isAllowed} via
  * {@link StackWalker#walk}, with a {@link java.util.stream.Stream#limit limit}
  * of {@code maxDepth + 1}. {@code StackWalker} does not materialise frames it
  * does not visit, so the per-call cost is bounded by {@code O(maxDepth)} rather
  * than the full stack size. The {@code + 1} lets the result distinguish
  * "exactly {@code maxDepth} frames" (allow) from "deeper" (deny).
- *
  * <p>The {@link Filter#criterionType() criterion type} is {@link StackDepth} —
  * a singleton marker. The {@code criterion} argument to {@link #isAllowed} is
  * ignored; the depth comes from the live thread stack.
@@ -57,4 +55,5 @@ public final class StackDepthFilter implements Filter<StackDepth> {
 	public String toString() {
 		return StackDepthFilter.class.getName() + " : maxDepth=" + maxDepth;
 	}
+
 }

@@ -35,11 +35,11 @@ public class LogEvent {
 	/**
 	 * Formats {@code args} following SLF4J {@link org.slf4j.helpers.MessageFormatter} conventions.
 	 * <ul>
-	 *   <li>0 args → empty string</li>
-	 *   <li>1 arg  → {@code args[0].toString()}</li>
-	 *   <li>2 args → SLF4J single-argument or array format depending on {@code args[1]} type</li>
-	 *   <li>3 args → SLF4J two-argument or array-with-throwable format</li>
-	 *   <li>4+ args → {@link Arrays#toString(Object[])}</li>
+	 * <li>0 args → empty string</li>
+	 * <li>1 arg → {@code args[0].toString()}</li>
+	 * <li>2 args → SLF4J single-argument or array format depending on {@code args[1]} type</li>
+	 * <li>3 args → SLF4J two-argument or array-with-throwable format</li>
+	 * <li>4+ args → {@link Arrays#toString(Object[])}</li>
 	 * </ul>
 	 *
 	 * @param args the arguments to format

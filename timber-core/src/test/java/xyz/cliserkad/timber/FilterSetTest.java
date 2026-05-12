@@ -17,6 +17,7 @@ public class FilterSetTest {
 		public Class<String> criterionType() {
 			return String.class;
 		}
+
 	};
 
 	private static final Filter<String> DENY_ALL = new Filter<>() {
@@ -30,6 +31,7 @@ public class FilterSetTest {
 		public Class<String> criterionType() {
 			return String.class;
 		}
+
 	};
 
 	private static final Filter<Integer> DENY_NEGATIVE = new Filter<>() {
@@ -43,6 +45,7 @@ public class FilterSetTest {
 		public Class<Integer> criterionType() {
 			return Integer.class;
 		}
+
 	};
 
 	@Test

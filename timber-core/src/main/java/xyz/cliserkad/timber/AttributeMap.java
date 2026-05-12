@@ -15,7 +15,7 @@ public class AttributeMap {
 	 * Stores {@code value} under its runtime class, replacing any previous value of the same type.
 	 *
 	 * @param value the value to store; must not be {@code null}
-	 * @param <T> inferred type of the value
+	 * @param <T>   inferred type of the value
 	 */
 	public <T> void put(T value) {
 		map.put(value.getClass(), value);
@@ -26,7 +26,7 @@ public class AttributeMap {
 	 * Uses {@link Class#cast} for a checked retrieval.
 	 *
 	 * @param type the key to look up
-	 * @param <T> the expected value type
+	 * @param <T>  the expected value type
 	 * @return the stored value, or {@code null}
 	 */
 	public <T> T get(Class<T> type) {
