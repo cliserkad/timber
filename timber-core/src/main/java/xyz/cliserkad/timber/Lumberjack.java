@@ -4,6 +4,7 @@ import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.event.Level;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -49,8 +50,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Returns {@code true} if {@code event} passes all registered filters.
-	 * Delegates to {@link FilterSet#isAllowed(AttributeMap)}.
+	 * Returns {@code true} if {@code event} passes all registered filters. Delegates to {@link FilterSet#isAllowed(AttributeMap)}.
 	 *
 	 * @param event the log event to evaluate
 	 */
@@ -59,9 +59,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Formats and emits a log line if the Event constructed from args passes all registered filters.
-	 * The line is prefixed with a color-coded level label from Maven's message utilities.
-	 * Callsite information (file name and line number) is appended when DEBUG level is specified.
+	 * Formats and emits a log line if the Event constructed from args passes all registered filters. The line is prefixed with a color-coded level label from Maven's message utilities. Callsite information (file name and line number) is appended when DEBUG level is specified.
 	 *
 	 * @param level the severity level; defaults to {@link Level#INFO} when {@code null}
 	 * @param args  the message or format string followed by optional arguments
@@ -73,6 +71,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 		LogEvent event = new LogEvent(args);
 		event.attributes.put(MavenLevelFilter.Level.fromSFL4JLevel(level));
 		event.attributes.put(StackDepth.INSTANCE);
+		event.attributes.put(event.toString());
 
 		if(!isAllowed(event)) {
 			return;
@@ -107,9 +106,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Walks the current thread's stack to extract the caller's file name and line number.
-	 * Index 3 skips {@code getStackTrace}, {@code logCallsiteInfo}, {@code log}, and
-	 * lands on the actual call site. The thread name is included when not on the main thread.
+	 * Walks the current thread's stack to extract the caller's file name and line number. Index 3 skips {@code getStackTrace}, {@code logCallsiteInfo}, {@code log}, and lands on the actual call site. The thread name is included when not on the main thread.
 	 */
 	private static String logCallsiteInfo() {
 		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -121,8 +118,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Returns the single {@link CombinedLogger} proxy that satisfies both SLF4J's
-	 * {@link org.slf4j.Logger} and Maven's {@link org.apache.maven.plugin.logging.Log}.
+	 * Returns the single {@link CombinedLogger} proxy that satisfies both SLF4J's {@link org.slf4j.Logger} and Maven's {@link org.apache.maven.plugin.logging.Log}.
 	 */
 	public static CombinedLogger combinedLogger() {
 		return PROXY;
@@ -136,8 +132,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Finds the method on {@link Lumberjack} that matches {@code requested} by name,
-	 * return type, and parameter types. Returns {@code null} if no match is found.
+	 * Finds the method on {@link Lumberjack} that matches {@code requested} by name, return type, and parameter types. Returns {@code null} if no match is found.
 	 */
 	private static Method matchMethod(Method requested) {
 		for(Method implemented : INSTANCE.getClass().getDeclaredMethods()) {
@@ -149,8 +144,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Returns {@code true} if {@code requested} and {@code actual} share the same name,
-	 * return type, and parameter type list.
+	 * Returns {@code true} if {@code requested} and {@code actual} share the same name, return type, and parameter type list.
 	 */
 	public static boolean methodsMatch(Method requested, Method actual) {
 		if(requested.getName().equals(actual.getName())) {
@@ -162,9 +156,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Finds the matching implementation method on this class and invokes it reflectively.
-	 * Used by the proxy's {@link #invoke} to forward non-logging calls that Lumberjack
-	 * implements directly (e.g. {@link org.slf4j.ILoggerFactory#getLogger}).
+	 * Finds the matching implementation method on this class and invokes it reflectively. Used by the proxy's {@link #invoke} to forward non-logging calls that Lumberjack implements directly (e.g. {@link org.slf4j.ILoggerFactory#getLogger}).
 	 *
 	 * @throws NoSuchMethodException if no matching method is found on this class
 	 */
@@ -181,8 +173,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Returns {@code true} if {@code level} is at or above the configured output threshold.
-	 * Callers can use this to skip expensive argument construction before logging.
+	 * Returns {@code true} if {@code level} is at or above the configured output threshold. Callers can use this to skip expensive argument construction before logging.
 	 *
 	 * @param level the level to test
 	 */
@@ -202,7 +193,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 		/**
 		 * see if the current level is greater than the requested level
 		 * this isn't stupid. The library does a similar check
-		 * 
+		 *
 		 * @see org.slf4j.Logger#isEnabledForLevel(Level)
 		 */
 		if(method.getName().matches("is(Trace|Debug|Info|Warn|Error)Enabled")) {
@@ -224,8 +215,7 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * {@link org.slf4j.ILoggerFactory} implementation.
-	 * Always returns the same {@link CombinedLogger} proxy regardless of {@code name}.
+	 * {@link org.slf4j.ILoggerFactory} implementation. Always returns the same {@link CombinedLogger} proxy regardless of {@code name}.
 	 */
 	@Override
 	public Logger getLogger(String name) {

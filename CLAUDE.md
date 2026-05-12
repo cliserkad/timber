@@ -58,6 +58,7 @@ Built-in filters:
 
 - `MavenLevelFilter` — uses its own four-value `Level` enum (DEBUG/INFO/WARN/ERROR), distinct from `org.slf4j.event.Level` because Maven's logging API doesn't distinguish TRACE from DEBUG. `Level.fromSFL4JLevel` collapses the two.
 - `StackDepthFilter` — keyed by the singleton `StackDepth` marker (which `Lumberjack.log` attaches to every event). Samples the live stack inside `isAllowed` via `StackWalker.walk(s -> s.limit(maxDepth+1).count())` so deep stacks short-circuit at the threshold instead of walking the root. The criterion argument is ignored; the marker only exists to wake the filter up. Design notes: `docs/stack-depth-filter.md`.
+- `SpamFilter` — keyed by `MessageContent`, which wraps the raw log args and lazily formats via `LogEvent.format()`. Maintains a circular buffer (default 16) of recently allowed formatted messages. Rejects events whose message has normalised Levenshtein similarity ≥ threshold (default 0.8) to any buffered entry. Rejected messages are not recorded, so repeats occupy only one slot. `isAllowed` is `synchronized` because it mutates the buffer. Opt-in — not registered by default. Design notes: `docs/spam-filter.md`.
 
 ### Level detection
 
