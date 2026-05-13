@@ -3,20 +3,21 @@ package xyz.cliserkad.timber;
 import java.util.HashMap;
 
 /**
- * A collection of {@link Filter} instances, each keyed by its criterion type.
- * At most one filter per criterion type is active; registering a second filter
- * for the same type replaces the first.
+ * A collection of {@link Filter} and {@link IndependentFilter} instances.
+ * Criterion-based filters are keyed by their criterion type; at most one per
+ * type is active. Independent filters are keyed by their concrete class; at
+ * most one per class is active.
  * <p>
- * Filters whose criterion type is absent from a given {@link AttributeMap} are
- * skipped rather than applied, so an event is only evaluated against filters
- * for attributes it actually carries.
+ * Criterion-based filters whose criterion type is absent from a given
+ * {@link AttributeMap} are skipped. Independent filters are always evaluated.
  */
 public class FilterSet {
 
 	private final HashMap<Class<?>, Filter<?>> filters = new HashMap<>();
+	private final HashMap<Class<?>, IndependentFilter> independentFilters = new HashMap<>();
 
 	/**
-	 * Registers {@code filter}, keyed by {@link Filter#criterionType()}.
+	 * Registers a criterion-based {@code filter}, keyed by {@link Filter#criterionType()}.
 	 * Replaces any previously registered filter for the same criterion type.
 	 *
 	 * @param filter      the filter to register; must not be {@code null}
@@ -27,14 +28,29 @@ public class FilterSet {
 	}
 
 	/**
-	 * Returns {@code false} if any registered filter rejects its corresponding
-	 * attribute in {@code attributes}. Filters whose criterion type is not present
-	 * in the map are not evaluated.
+	 * Registers an {@link IndependentFilter}, keyed by its concrete class.
+	 * Replaces any previously registered filter of the same class.
+	 *
+	 * @param filter the independent filter to register; must not be {@code null}
+	 */
+	public void add(IndependentFilter filter) {
+		independentFilters.put(filter.getClass(), filter);
+	}
+
+	/**
+	 * Returns {@code false} if any registered filter rejects the event.
+	 * Independent filters are evaluated first, then criterion-based filters
+	 * whose criterion type is present in {@code attributes}.
 	 *
 	 * @param attributes the attribute map from a {@link LogEvent}
 	 * @return {@code true} if all applicable filters pass, {@code false} otherwise
 	 */
 	public boolean isAllowed(AttributeMap attributes) {
+		for(IndependentFilter filter : independentFilters.values()) {
+			if(!filter.isAllowed()) {
+				return false;
+			}
+		}
 		for(var entry : filters.entrySet()) {
 			if(attributes.contains(entry.getKey())) {
 				if(!checkFilter(entry.getValue(), attributes.getRaw(entry.getKey()))) {

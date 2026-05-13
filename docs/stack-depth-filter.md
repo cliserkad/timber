@@ -1,24 +1,23 @@
 # StackDepthFilter
 
-A `Filter` that suppresses log events whose call site sits deeper than a configured
+A filter that suppresses log events whose call site sits deeper than a configured
 maximum number of stack frames. Useful for cutting noise from helper-of-helper code
 while keeping top-level orchestration messages.
 
 ## Public types
 
-- `xyz.cliserkad.timber.StackDepth` — singleton marker (`StackDepth.INSTANCE`). Carries no data; its only role is to act as the `criterionType()` key that wakes the filter up.
-- `xyz.cliserkad.timber.StackDepthFilter` — `Filter<StackDepth>` that holds an inclusive `maxDepth` and samples the current stack inside `isAllowed`.
+- `xyz.cliserkad.timber.StackDepthFilter` — `IndependentFilter` that holds an inclusive `maxDepth` and samples the current stack inside `isAllowed()`.
 
 ## Wiring
 
-`Lumberjack.log` attaches `StackDepth.INSTANCE` to every `LogEvent` alongside the
-`MavenLevelFilter.Level` attribute. If a `StackDepthFilter` is registered with the
-global `FilterSet`, `FilterSet.isAllowed` invokes it; if not, the marker is an
-inert HashMap entry — the only cost is one `HashMap.put` per log call.
+`StackDepthFilter` implements `IndependentFilter`, so `FilterSet` always evaluates
+it for every log event when registered — no marker attribute needs to be attached
+to the `LogEvent`. If no `StackDepthFilter` is registered, there is zero per-event
+cost.
 
 ## Sampling strategy
 
-Inside `isAllowed`, the filter calls:
+Inside `isAllowed()`, the filter calls:
 
 ```java
 StackWalker.getInstance().walk(s -> s.limit(maxDepth + 1).count())
@@ -33,18 +32,15 @@ is bounded by `O(maxDepth)`, not `O(stack.size())`. The `+ 1` lets us distinguis
 stack into a `StackTraceElement[]` on every call, which is the exact cost
 `StackWalker` was designed to avoid.
 
-## Why a marker, not the depth value, as the criterion
+## Why IndependentFilter, not a criterion-based Filter
 
-Two alternative designs were considered:
+`StackDepthFilter` samples live runtime state (the call stack) rather than inspecting
+a pre-computed attribute on the event. The `IndependentFilter` interface captures
+this pattern directly — filters that need no criterion value from the `AttributeMap`.
 
-1. **Eager sampling** — Lumberjack measures stack depth on every log call and stores it as an `Integer` (or wrapper) attribute. Rejected: pays the full sampling cost on every log call, even when no `StackDepthFilter` is registered, and can't short-circuit because the consumer might use the value differently.
-
-2. **Lazy sampling via a marker** (chosen) — the filter measures depth itself, and gets to short-circuit using its own threshold. The marker singleton has zero allocation cost.
-
-The trade-off: the marker pattern is slightly unusual within the existing filter
-framework (where criteria are normally data, e.g. `MavenLevelFilter.Level`). It's
-documented on the marker class so future readers understand why `criterion` is
-ignored in `isAllowed`.
+Previously, a singleton marker class (`StackDepth.INSTANCE`) was attached to every
+event just to "wake up" the filter. The `IndependentFilter` abstraction eliminates
+that ceremony: independent filters are always evaluated, so no marker is needed.
 
 ## Calibrating `maxDepth`
 
@@ -55,7 +51,6 @@ The sampled depth includes:
 - `Lumberjack.log` itself
 - `Lumberjack.isAllowed`
 - `FilterSet.isAllowed`
-- `FilterSet.checkFilter`
 - `StackDepthFilter.isAllowed`
 - The `StackWalker.walk` lambda frame
 
@@ -71,5 +66,5 @@ a tuning knob, not a portable constant.
 - `maxDepth = 0` rejects everything (the filter's own frames already exceed 0)
 - `maxDepth = Integer.MAX_VALUE` allows everything
 - Recursing into a helper drives the sampled depth past a tight threshold (allow → deny crossover demonstrated)
-- Integrates with `FilterSet`: a registered `StackDepthFilter(0)` causes `FilterSet.isAllowed` to deny an `AttributeMap` containing `StackDepth.INSTANCE`
-- A `StackDepthFilter` does not fire on events that don't carry the `StackDepth` attribute
+- Integrates with `FilterSet`: a registered `StackDepthFilter(0)` causes `FilterSet.isAllowed` to deny
+- Registering a second `StackDepthFilter` replaces the first (keyed by concrete class)

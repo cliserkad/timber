@@ -49,16 +49,21 @@ The `invoke` handler routes by method name:
 
 The filter system was redesigned to remove a reflection-heavy `TypeMap`/`Filter.always()` pattern. The current shape:
 
-- `Filter<C>` declares its criterion type via `criterionType()` (no instance probe).
-- `AttributeMap` is a `Class<?> → Object` map keyed by the value's runtime class.
-- `FilterSet` stores filters keyed by `criterionType()`. `isAllowed(AttributeMap)` only evaluates filters whose criterion type is actually present on the event. The single unchecked cast is in `FilterSet.checkFilter`, justified because the key used to look up the value IS the cast target.
-- `LogEvent` carries `args` plus an `AttributeMap`; callers populate attributes (e.g. `event.attributes.put(MavenLevelFilter.Level.fromSFL4JLevel(level))`) and `Lumberjack.isAllowed(event)` delegates to the `FilterSet`.
+Two filter categories exist:
 
-Built-in filters:
+- **Criterion-based** (`Filter<C>`) — declares its criterion type via `criterionType()`. `FilterSet` stores these keyed by criterion type and only evaluates them when that type is present in the event's `AttributeMap`. The single unchecked cast is in `FilterSet.checkFilter`, justified because the key used to look up the value IS the cast target.
+- **Independent** (`IndependentFilter`) — no criterion; evaluates live runtime state (e.g. the call stack). `FilterSet` stores these keyed by concrete class and always evaluates them for every event.
+
+`AttributeMap` is a `Class<?> → Object` map keyed by the value's runtime class. `LogEvent` carries `args` plus an `AttributeMap`; callers populate attributes (e.g. `event.attributes.put(MavenLevelFilter.Level.fromSFL4JLevel(level))`) and `Lumberjack.isAllowed(event)` delegates to the `FilterSet`.
+
+Built-in criterion-based filters:
 
 - `MavenLevelFilter` — uses its own four-value `Level` enum (DEBUG/INFO/WARN/ERROR), distinct from `org.slf4j.event.Level` because Maven's logging API doesn't distinguish TRACE from DEBUG. `Level.fromSFL4JLevel` collapses the two.
-- `StackDepthFilter` — keyed by the singleton `StackDepth` marker (which `Lumberjack.log` attaches to every event). Samples the live stack inside `isAllowed` via `StackWalker.walk(s -> s.limit(maxDepth+1).count())` so deep stacks short-circuit at the threshold instead of walking the root. The criterion argument is ignored; the marker only exists to wake the filter up. Design notes: `docs/stack-depth-filter.md`.
-- `SpamFilter` — keyed by `MessageContent`, which wraps the raw log args and lazily formats via `LogEvent.format()`. Maintains a circular buffer (default 16) of recently allowed formatted messages. Rejects events whose message has normalised Levenshtein similarity ≥ threshold (default 0.8) to any buffered entry. Rejected messages are not recorded, so repeats occupy only one slot. `isAllowed` is `synchronized` because it mutates the buffer. Opt-in — not registered by default. Design notes: `docs/spam-filter.md`.
+- `SpamFilter` — keyed by `String` (the formatted message). Maintains a circular buffer (default 16) of recently allowed formatted messages. Rejects events whose message has normalised Levenshtein similarity ≥ threshold (default 0.8) to any buffered entry. Rejected messages are not recorded, so repeats occupy only one slot. `isAllowed` is `synchronized` because it mutates the buffer. Opt-in — not registered by default. Design notes: `docs/spam-filter.md`.
+
+Built-in independent filters:
+
+- `StackDepthFilter` — samples the live stack inside `isAllowed()` via `StackWalker.walk(s -> s.limit(maxDepth+1).count())` so deep stacks short-circuit at the threshold instead of walking the root. Opt-in. Design notes: `docs/stack-depth-filter.md`.
 
 ### Level detection
 
