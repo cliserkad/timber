@@ -64,6 +64,7 @@ Built-in criterion-based filters:
 Built-in independent filters:
 
 - `StackDepthFilter` — samples the live stack inside `isAllowed()` via `StackWalker.walk(s -> s.limit(maxDepth+1).count())` so deep stacks short-circuit at the threshold instead of walking the root. Opt-in. Design notes: `docs/stack-depth-filter.md`.
+- `CallerFilter` — walks the stack to find the first frame outside the logging dispatch chain (`CallerFilter`, `FilterSet`, `Lumberjack`, JDK proxy classes) and rejects the event if that caller's fully-qualified class name is in the configured blocked set. Opt-in. Design notes: `docs/caller-filter.md`.
 
 ### Level detection
 

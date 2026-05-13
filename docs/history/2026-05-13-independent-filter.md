@@ -1,4 +1,4 @@
-# IndependentFilter — 2026-05-13
+# IndependentFilter & CallerFilter — 2026-05-13
 
 ## What changed
 
@@ -13,6 +13,9 @@
 - Deleted the `StackDepth` singleton marker class. It existed only to wake up
   `StackDepthFilter` via the attribute map — `IndependentFilter` eliminates that need.
 - Removed `event.attributes.put(StackDepth.INSTANCE)` from `Lumberjack.log`.
+- Implemented `CallerFilter` (`IndependentFilter`) that walks the call stack to find
+  the first frame outside the logging dispatch chain and rejects the event if that
+  class is in a configured blocked set.
 
 ## Why
 
@@ -25,6 +28,9 @@ case a first-class concept and removes that boilerplate.
 ## Files added
 
 - `IndependentFilter.java`
+- `CallerFilter.java`
+- `CallerFilterTest.java`
+- `docs/caller-filter.md`
 - `docs/history/2026-05-13-independent-filter.md`
 
 ## Files modified
