@@ -12,16 +12,12 @@ import java.util.Set;
  * This filter is opt-in — it is not registered by default. Add it to the
  * {@link FilterSet} to activate class-based suppression:
  * <pre>
- *   FILTERS.add(new CallerFilter("com.example.NoisyClass"));
+ * FILTERS.add(new CallerFilter("com.example.NoisyClass"));
  * </pre>
  */
 public final class CallerFilter implements IndependentFilter {
 
-	private static final Set<String> DISPATCH_CLASSES = Set.of(
-		CallerFilter.class.getName(),
-		FilterSet.class.getName(),
-		Lumberjack.class.getName()
-	);
+	private static final Set<String> DISPATCH_CLASSES = Set.of(CallerFilter.class.getName(), FilterSet.class.getName(), Lumberjack.class.getName());
 	private static final String JDK_PROXY_PREFIX = "jdk.proxy";
 
 	private final Set<String> blockedClassNames;
@@ -43,19 +39,12 @@ public final class CallerFilter implements IndependentFilter {
 	 */
 	@Override
 	public boolean isAllowed() {
-		return StackWalker.getInstance().walk(frames ->
-			frames.map(StackWalker.StackFrame::getClassName)
-				.filter(CallerFilter::isUserFrame)
-				.findFirst()
-				.map(className -> !blockedClassNames.contains(className))
-				.orElse(true)
-		);
+		return StackWalker.getInstance().walk(frames -> frames.map(StackWalker.StackFrame::getClassName).filter(CallerFilter::isUserFrame).findFirst().map(className -> !blockedClassNames.contains(className)).orElse(true));
 	}
 
 	/** Returns {@code true} if the frame belongs to user code rather than the logging dispatch chain. */
 	private static boolean isUserFrame(final String className) {
-		return !DISPATCH_CLASSES.contains(className)
-			&& !className.startsWith(JDK_PROXY_PREFIX);
+		return !DISPATCH_CLASSES.contains(className) && !className.startsWith(JDK_PROXY_PREFIX);
 	}
 
 	@Override
