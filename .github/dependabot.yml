@@ -1,9 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "maven" # See documentation for possible values
-    directories:
-      - "/"
-      - "/timber-core"
-      - "/timber-maven-plugin"
+  - package-ecosystem: "maven"
+    directory: "/"
     schedule:
       interval: "weekly"
