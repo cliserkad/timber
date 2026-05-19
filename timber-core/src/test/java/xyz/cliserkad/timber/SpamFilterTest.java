@@ -91,13 +91,8 @@ public class SpamFilterTest {
 		SpamFilter spam = new SpamFilter(16, 1.0);
 		set.add(spam);
 
-		AttributeMap attrs1 = new AttributeMap();
-		attrs1.put("hello");
-		assertTrue(set.isAllowed(attrs1));
-
-		AttributeMap attrs2 = new AttributeMap();
-		attrs2.put("hello");
-		assertFalse(set.isAllowed(attrs2));
+		assertTrue(set.isAllowed(new LogEvent("hello")));
+		assertFalse(set.isAllowed(new LogEvent("hello")));
 	}
 
 	@Test
@@ -105,8 +100,7 @@ public class SpamFilterTest {
 		FilterSet set = new FilterSet();
 		set.add(new SpamFilter(16, 1.0));
 
-		AttributeMap attrs = new AttributeMap();
-		assertTrue(set.isAllowed(attrs));
+		assertTrue(set.isAllowed(new LogEvent("")));
 	}
 
 	// --- similarity / Levenshtein unit tests ---

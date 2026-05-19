@@ -45,11 +45,11 @@ public class MavenLevelFilterTest {
 		FilterSet set = new FilterSet();
 		set.add(new MavenLevelFilter(WARN));
 
-		AttributeMap allowed = new AttributeMap();
-		allowed.put(ERROR);
+		LogEvent allowed = new LogEvent();
+		allowed.attributes.put(ERROR);
 
-		AttributeMap denied = new AttributeMap();
-		denied.put(DEBUG);
+		LogEvent denied = new LogEvent();
+		denied.attributes.put(DEBUG);
 
 		assertTrue(set.isAllowed(allowed));
 		assertFalse(set.isAllowed(denied));

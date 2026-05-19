@@ -15,7 +15,7 @@ import java.util.*;
  * Attempts to route logging to Maven Plugin / Mojo output during Maven builds. Falls back to System.out if routing fails.
  */
 public class Lumberjack implements InvocationHandler, ILoggerFactory {
-
+	
 	private static final Lumberjack INSTANCE = new Lumberjack();
 	private static final CombinedLogger PROXY = (CombinedLogger) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { CombinedLogger.class }, INSTANCE);
 	private static final Level OUTPUT_LEVEL;
@@ -50,12 +50,12 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 	}
 
 	/**
-	 * Returns {@code true} if {@code event} passes all registered filters. Delegates to {@link FilterSet#isAllowed(AttributeMap)}.
+	 * Returns {@code true} if {@code event} passes all registered filters. Delegates to {@link FilterSet#isAllowed(LogEvent)}.
 	 *
 	 * @param event the log event to evaluate
 	 */
 	public static boolean isAllowed(LogEvent event) {
-		return FILTERS.isAllowed(event.attributes);
+		return FILTERS.isAllowed(event);
 	}
 
 	/**

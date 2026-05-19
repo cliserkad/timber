@@ -7,7 +7,7 @@ package xyz.cliserkad.timber;
  * <p>The buffer and head pointer are guarded by {@code synchronized} so the
  * filter is safe to use from multiple threads.
  */
-public final class SpamFilter implements Filter<String> {
+public final class SpamFilter implements IndependentFilter {
 
 	public static final int DEFAULT_BUFFER_SIZE = 16;
 	public static final double DEFAULT_SIMILARITY_THRESHOLD = 0.8;
@@ -41,7 +41,8 @@ public final class SpamFilter implements Filter<String> {
 	 * Returns {@code true} if the formatted message is sufficiently unique compared to every message in the buffer. When allowed, the message is recorded into the buffer.
 	 */
 	@Override
-	public boolean isAllowed(final String message) {
+	public boolean isAllowed(LogEvent logEvent) {
+		final String message = logEvent.toString();
 		for(int i = 0; i < count; i++) {
 			int index = (head - 1 - i + buffer.length) % buffer.length;
 			if(similarity(message, buffer[index]) >= similarityThreshold) {
@@ -54,11 +55,6 @@ public final class SpamFilter implements Filter<String> {
 			count++;
 		}
 		return true;
-	}
-
-	@Override
-	public Class<String> criterionType() {
-		return String.class;
 	}
 
 	/**

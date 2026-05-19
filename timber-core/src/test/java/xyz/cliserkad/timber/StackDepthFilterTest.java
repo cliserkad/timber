@@ -1,5 +1,6 @@
 package xyz.cliserkad.timber;
 
+import org.apache.maven.plugin.logging.Log;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,13 +15,13 @@ public class StackDepthFilterTest {
 	@Test
 	public void zeroMaxDepthRejectsAllEvents() {
 		StackDepthFilter filter = new StackDepthFilter(0);
-		assertFalse(filter.isAllowed());
+		assertFalse(filter.isAllowed("test"));
 	}
 
 	@Test
 	public void veryLargeMaxDepthAllowsAllEvents() {
 		StackDepthFilter filter = new StackDepthFilter(Integer.MAX_VALUE);
-		assertTrue(filter.isAllowed());
+		assertTrue(filter.isAllowed("test"));
 	}
 
 	@Test
@@ -29,16 +30,17 @@ public class StackDepthFilterTest {
 		// + 6 leaves headroom for the filter dispatch frames at the direct call site
 		StackDepthFilter filter = new StackDepthFilter(hereDepth + 6);
 
-		assertTrue(filter.isAllowed(), "shallow call should pass at maxDepth=hereDepth+6");
+		LogEvent event = new LogEvent("hello world");
+		assertTrue(filter.isAllowed(event), "shallow call should pass at maxDepth=hereDepth+6");
 
-		assertFalse(callRecursively(filter, 50), "recursing 50 frames should drive depth past the threshold");
+		assertFalse(callRecursively(event, filter, 50), "recursing 50 frames should drive depth past the threshold");
 	}
 
-	private boolean callRecursively(StackDepthFilter filter, int remaining) {
+	private boolean callRecursively(LogEvent event, StackDepthFilter filter, int remaining) {
 		if(remaining == 0) {
-			return filter.isAllowed();
+			return filter.isAllowed(event);
 		}
-		return callRecursively(filter, remaining - 1);
+		return callRecursively(event, filter, remaining - 1);
 	}
 
 	@Test
@@ -46,9 +48,7 @@ public class StackDepthFilterTest {
 		FilterSet set = new FilterSet();
 		set.add(new StackDepthFilter(0));
 
-		AttributeMap attrs = new AttributeMap();
-
-		assertFalse(set.isAllowed(attrs), "FilterSet should deny when StackDepthFilter rejects");
+		assertFalse(set.isAllowed(new LogEvent()), "FilterSet should deny when StackDepthFilter rejects");
 	}
 
 	@Test
@@ -57,8 +57,7 @@ public class StackDepthFilterTest {
 		set.add(new StackDepthFilter(0));
 		set.add(new StackDepthFilter(Integer.MAX_VALUE));
 
-		AttributeMap attrs = new AttributeMap();
-		assertTrue(set.isAllowed(attrs), "second registration should replace the first");
+		assertTrue(set.isAllowed(new LogEvent()), "second registration should replace the first");
 	}
 
 }
