@@ -1,8 +1,8 @@
 package xyz.cliserkad.timber;
 
 /**
- * Filters log events by minimum severity level.
- * Events at or above {@link #OUTPUT_LEVEL} are allowed; events below are suppressed.
+ * Filters log events by minimum severity level. Events at or above {@link #OUTPUT_LEVEL} are allowed; events below are
+ * suppressed.
  */
 public class MavenLevelFilter implements Filter<MavenLevelFilter.Level> {
 
@@ -15,15 +15,6 @@ public class MavenLevelFilter implements Filter<MavenLevelFilter.Level> {
 	@Override
 	public boolean isAllowed(final Level level) {
 		return level.ordinal() >= OUTPUT_LEVEL.ordinal();
-	}
-
-	/**
-	 * Returns {@link Level}{@code .class}, used by {@link FilterSet} to match the level
-	 * attribute stored in a {@link LogEvent}'s {@link AttributeMap}.
-	 */
-	@Override
-	public Class<Level> criterionType() {
-		return Level.class;
 	}
 
 	/**
@@ -41,8 +32,8 @@ public class MavenLevelFilter implements Filter<MavenLevelFilter.Level> {
 	}
 
 	/**
-	 * Severity scale used by this filter, ordered from least to most severe.
-	 * Ordinal comparisons ({@code >=}) implement the threshold check.
+	 * Severity scale used by this filter, ordered from least to most severe. Ordinal comparisons ({@code >=}) implement
+	 * the threshold check.
 	 */
 	public enum Level {
 
@@ -52,8 +43,8 @@ public class MavenLevelFilter implements Filter<MavenLevelFilter.Level> {
 		ERROR;
 
 		/**
-		 * Maps an SLF4J level to this enum. TRACE collapses to DEBUG because
-		 * Maven's logging API does not distinguish between the two.
+		 * Maps an SLF4J level to this enum. TRACE collapses to DEBUG because Maven's logging API does not distinguish
+		 * between the two.
 		 *
 		 * @param level the SLF4J level to convert
 		 */
