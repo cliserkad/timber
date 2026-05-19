@@ -9,12 +9,8 @@ public interface Version {
 
 	String COMMIT_ID = "${git.commit.id.full}";
 	String COMMIT_ID_ABBREV = "${git.commit.id.abbrev}";
-	String DESCRIBE = "${git.commit.id.describe}";
-	String DESCRIBE_SHORT = "${git.commit.id.describe-short}";
 	String COMMIT_USER_NAME = "${git.commit.user.name}";
 	String COMMIT_USER_EMAIL = "${git.commit.user.email}";
-	// String COMMIT_MESSAGE_FULL = "${git.commit.message.full}";
-	// String COMMIT_MESSAGE_SHORT = "${git.commit.message.short}";
 	String COMMIT_TIME = "${git.commit.time}";
 	String CLOSEST_TAG_NAME = "${git.closest.tag.name}";
 	String CLOSEST_TAG_COMMIT_COUNT = "${git.closest.tag.commit.count}";
