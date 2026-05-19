@@ -18,6 +18,7 @@ public class FilterSetTest {
 		public Class<Integer> criterionType() {
 			return Integer.class;
 		}
+
 	};
 
 	private static final Filter<Integer> DENY_ALL = new Filter<>() {
@@ -31,6 +32,7 @@ public class FilterSetTest {
 		public Class<Integer> criterionType() {
 			return Integer.class;
 		}
+
 	};
 
 	private static final Filter<Integer> DENY_NEGATIVE = new Filter<>() {
@@ -105,15 +107,15 @@ public class FilterSetTest {
 	}
 
 	/**
-	 @Test public void addDoesNotOverrideOnSameCriterion() {
-	 FilterSet set = new FilterSet();
-	 set.add(DENY_ALL);
-	 set.add(ALLOW_ALL);
-
-	 LogEvent event = new LogEvent();
-	 event.attributes.put(1);
-	 event.attributes.put(-1);
-	 assertFalse(set.isAllowed(event));
-	 }*/
+	 * @Test public void addDoesNotOverrideOnSameCriterion() {
+	 *       FilterSet set = new FilterSet();
+	 *       set.add(DENY_ALL);
+	 *       set.add(ALLOW_ALL);
+	 *       LogEvent event = new LogEvent();
+	 *       event.attributes.put(1);
+	 *       event.attributes.put(-1);
+	 *       assertFalse(set.isAllowed(event));
+	 *       }
+	 */
 
 }

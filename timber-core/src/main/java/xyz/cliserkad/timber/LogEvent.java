@@ -6,7 +6,8 @@ import org.slf4j.helpers.MessageFormatter;
 import java.util.Arrays;
 
 /**
- * An immutable snapshot of a single log call: the raw arguments passed by the caller and a typed attribute map that {@link Filter} instances inspect to decide whether the event should be emitted.
+ * An immutable snapshot of a single log call: the raw arguments passed by the caller and a typed attribute map that
+ * {@link Filter} instances inspect to decide whether the event should be emitted.
  */
 public class LogEvent {
 
@@ -14,7 +15,8 @@ public class LogEvent {
 	public final Object[] args;
 
 	/**
-	 * Typed attributes attached to this event. {@link Filter} implementations read from this map by criterion type. For example, {@link MavenLevelFilter} looks up {@link MavenLevelFilter.Level}.
+	 * Typed attributes attached to this event. {@link Filter} implementations read from this map by criterion type. For
+	 * example, {@link MavenLevelFilter} looks up {@link MavenLevelFilter.Level}.
 	 */
 	public final AttributeMap attributes;
 

@@ -1,9 +1,12 @@
 package xyz.cliserkad.timber;
 
 /**
- * Suppresses log events whose formatted message is too similar to a recently allowed message. Similarity is measured by normalised Levenshtein distance: {@code 1.0 - (editDistance / max(len1, len2))}. If the similarity to any message in the circular buffer meets or exceeds the configured threshold, the event is rejected.
+ * Suppresses log events whose formatted message is too similar to a recently allowed message. Similarity is measured by
+ * normalised Levenshtein distance: {@code 1.0 - (editDistance / max(len1, len2))}. If the similarity to any message in
+ * the circular buffer meets or exceeds the configured threshold, the event is rejected.
  * <p>Allowed messages are recorded into the buffer; rejected messages are not,
- * so a repeated message only ever occupies one slot. Once the buffer is full the oldest entry is overwritten, allowing the same message to pass again after enough unique messages have intervened.
+ * so a repeated message only ever occupies one slot. Once the buffer is full the oldest entry is overwritten, allowing
+ * the same message to pass again after enough unique messages have intervened.
  * <p>The buffer and head pointer are guarded by {@code synchronized} so the
  * filter is safe to use from multiple threads.
  */
@@ -38,7 +41,8 @@ public final class SpamFilter implements IndependentFilter {
 	}
 
 	/**
-	 * Returns {@code true} if the formatted message is sufficiently unique compared to every message in the buffer. When allowed, the message is recorded into the buffer.
+	 * Returns {@code true} if the formatted message is sufficiently unique compared to every message in the buffer.
+	 * When allowed, the message is recorded into the buffer.
 	 */
 	@Override
 	public boolean isAllowed(LogEvent logEvent) {
@@ -58,7 +62,8 @@ public final class SpamFilter implements IndependentFilter {
 	}
 
 	/**
-	 * Normalised similarity between two strings: {@code 1.0 - (editDistance / maxLen)}. Returns 1.0 for equal strings and 0.0 when every character differs.
+	 * Normalised similarity between two strings: {@code 1.0 - (editDistance / maxLen)}. Returns 1.0 for equal strings
+	 * and 0.0 when every character differs.
 	 */
 	static double similarity(final String a, final String b) {
 		final int maxLen = Math.max(a.length(), b.length());
@@ -69,7 +74,8 @@ public final class SpamFilter implements IndependentFilter {
 	}
 
 	/**
-	 * Classic two-row Levenshtein distance. The shorter string is always used as the "column" dimension so the two working arrays are as small as possible.
+	 * Classic two-row Levenshtein distance. The shorter string is always used as the "column" dimension so the two
+	 * working arrays are as small as possible.
 	 */
 	static int levenshteinDistance(String a, String b) {
 		if(a.length() > b.length()) {

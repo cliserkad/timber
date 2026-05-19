@@ -3,16 +3,20 @@ package xyz.cliserkad.timber;
 import java.util.HashMap;
 
 /**
- * A collection of {@link Filter} and {@link IndependentFilter} instances. Criterion-based filters are keyed by their criterion type; at most one per type is active. Independent filters are keyed by their concrete class; at most one per class is active.
+ * A collection of {@link Filter} and {@link IndependentFilter} instances. Criterion-based filters are keyed by their
+ * criterion type; at most one per type is active. Independent filters are keyed by their concrete class; at most one
+ * per class is active.
  * <p>
- * Criterion-based filters whose criterion type is absent from a given {@link AttributeMap} are skipped. Independent filters are always evaluated.
+ * Criterion-based filters whose criterion type is absent from a given {@link AttributeMap} are skipped. Independent
+ * filters are always evaluated.
  */
 public class FilterSet {
 
 	private final HashMap<Class<?>, Filter<?>> filters = new HashMap<>();
 
 	/**
-	 * Registers a criterion-based {@code filter}, keyed by {@link Filter#criterionType()}. Replaces any previously registered filter for the same criterion type.
+	 * Registers a criterion-based {@code filter}, keyed by {@link Filter#criterionType()}. Replaces any previously
+	 * registered filter for the same criterion type.
 	 *
 	 * @param filter the filter to register; must not be {@code null}
 	 */
@@ -21,7 +25,8 @@ public class FilterSet {
 	}
 
 	/**
-	 * Returns {@code false} if any registered filter rejects the event. Independent filters are evaluated first, then criterion-based filters whose criterion type is present in {@code attributes}.
+	 * Returns {@code false} if any registered filter rejects the event. Independent filters are evaluated first, then
+	 * criterion-based filters whose criterion type is present in {@code attributes}.
 	 *
 	 * @param event the LogEvent to be tested
 	 * @return {@code true} if all applicable filters pass, {@code false} otherwise
@@ -42,7 +47,9 @@ public class FilterSet {
 	}
 
 	/**
-	 * Applies a single filter to a raw attribute value. {@link Filter#criterionType()}{@code .cast()} provides a runtime-checked cast; it is safe because the criterion type is the same key used to retrieve the value from the {@link AttributeMap}.
+	 * Applies a single filter to a raw attribute value. {@link Filter#criterionType()}{@code .cast()} provides a
+	 * runtime-checked cast; it is safe because the criterion type is the same key used to retrieve the value from the
+	 * {@link AttributeMap}.
 	 */
 	@SuppressWarnings(
 		{ "unchecked", "rawtypes" }
