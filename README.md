@@ -1,95 +1,90 @@
 # timber
 
-A logging library that bridges SLF4J and Maven plugin logging through a single proxy, plus a Maven plugin that detects the active build log level and exposes it to downstream consumers.
+A logging filter framework for Maven builds. Timber bridges SLF4J and Maven plugin logging through a single dynamic proxy and provides pluggable filters to suppress noise at runtime.
 
 ## Modules
 
-- **timber-core** — the logging library (`Lumberjack`, `Filter`, `AttributeMap`, `FilterSet`).
-- **timber-maven-plugin** — provides the `timber:level` goal.
+- **timber-core** — the logging library
+- **timber-maven-plugin** — detects the Maven log level
 
 ## Build & test
 
-Multi-module Maven build, Java 21, version `${revision}` (currently `0.0.1`) resolved by the `flatten-maven-plugin`.
+Requires Java 21 and Maven 3.9.8+.
+
+Build and execute unit / integration tests
 
 ```bash
-# Full build, including the IT projects under timber-maven-plugin/src/it
-mvn clean verify
+./scripts/build.sh
+```
 
-# Skip the invoker ITs while iterating
-mvn verify -Dinvoker.skip=true
+Format Java code using Spotless:apply
+
+```bash
+./scripts/format.sh
 ```
 
 ## Architecture
 
 ### Lumberjack
 
-`Lumberjack` is the entry point. A single dynamic-proxy instance satisfies both `org.slf4j.Logger` and `org.apache.maven.plugin.logging.Log` consumers, exposed through the `CombinedLogger` interface. Output is written directly to `System.out`. When DEBUG is enabled, the call site (file + line) is appended to each line.
+`Lumberjack` is the central dispatcher. It implements `InvocationHandler` and `ILoggerFactory`, creating a single dynamic-proxy instance that satisfies both SLF4J's `Logger` and Maven's `Log` via the `CombinedLogger` interface. Output goes to `System.out` with Maven-style color-coded level prefixes. When DEBUG is enabled, call-site info (file, line, thread) is appended.
 
 ### Filter pipeline
 
-- `Filter<C>` declares its criterion type via `criterionType()`.
-- `AttributeMap` is a `Class<?> → Object` map keyed by the value's runtime class.
-- `FilterSet` stores filters keyed by `criterionType()` and only evaluates filters whose criterion type is actually present on the event.
-- `LogEvent` carries the raw arguments plus an `AttributeMap` of typed attributes.
+Every log call passes through a `FilterSet`. One rejection from any filter suppresses the event.
 
-Built-in filters:
+There are two kinds of filter:
 
-- `MavenLevelFilter` — minimum-severity threshold using a four-value `Level` enum (DEBUG/INFO/WARN/ERROR), distinct from `org.slf4j.event.Level` because Maven's logging API doesn't distinguish TRACE from DEBUG. `MavenLevelFilter.Level.fromSFL4JLevel` collapses the two.
-- `StackDepthFilter` — maximum stack depth at which a log call is permitted; deeper helper-of-helper messages are suppressed. Keyed by the singleton `StackDepth` marker that `Lumberjack.log` attaches to every event. Sampling uses `StackWalker` with a limit so deep stacks short-circuit at the threshold.
+- **Criterion-based** (`Filter<C>`) — keyed by criterion type, only evaluated when that type is present in the event's `AttributeMap`.
+- **Independent** (`IndependentFilter`) — evaluated for every event, typically sampling runtime state like the call stack.
 
 ### Level detection
 
-The `timber:level` mojo probes `getLog().is{Error,Warn,Info,Debug}Enabled()` starting from `-1` and increments per enabled level, yielding 0 (errors only / `-q`), 2 (default INFO), or 3 (`-X` debug). The result is written to `project.properties`, `session.userProperties`, and `session.systemProperties` under `timber.level`. `Lumberjack` reads `System.getProperty("timber.level")` at startup to set its output threshold.
+The `timber:level` mojo probes `getLog().is{Debug,Info,Warn,Error}Enabled()` and writes the result to `timber.level` in project, session, and system properties. `Lumberjack` reads this at startup to configure its `MavenLevelFilter`.
 
 ## Public API
 
-### Logging — `xyz.cliserkad.timber.Lumberjack`
+### Logging
 
 ```java
-Lumberjack.log("hello world");                        // INFO by default
+Lumberjack.log("hello world");                         // INFO by default
 Lumberjack.
 
-log(Level.WARN, "disk usage at {}%",92);  // SLF4J-style formatting
+log(Level.WARN, "disk usage at {}%",92);    // SLF4J-style formatting
 Lumberjack.
 
 log(Level.ERROR, "fatal:",throwable);
 ```
 
-### Custom filters
+### Built-in filters
 
-Implement `Filter<C>` and register with the global `FilterSet` (or your own):
-
-```java
-public class TenantFilter implements Filter<TenantId> {
-
-	private final Set<TenantId> allowed;
-
-	@Override
-	public boolean isAllowed(TenantId t) {
-		return allowed.contains(t);
-	}
-
-	@Override
-	public Class<TenantId> criterionType() {
-		return TenantId.class;
-	}
-
-}
-```
-
-### Stack-depth filtering
+**MavenLevelFilter** — minimum severity threshold. Registered automatically at startup from `timber.level`. Uses a four-value `Level` enum (DEBUG, INFO, WARN, ERROR) that collapses SLF4J's TRACE into DEBUG.
 
 ```java
-// reject any log call whose stack is deeper than 30 frames (including dispatch overhead)
-FilterSet filters = new FilterSet();
-filters.add(new StackDepthFilter(30));
+Lumberjack.FILTERS.add(new MavenLevelFilter(MavenLevelFilter.Level.WARN));
 ```
 
-`Lumberjack.log` already attaches `StackDepth.INSTANCE` to every event, so registering a `StackDepthFilter` on the global `FilterSet` is the only step needed. With no filter registered, the marker is inert.
+**SpamFilter** — suppresses near-duplicate messages using normalized Levenshtein distance. Maintains a circular buffer of recent messages (default size 16, similarity threshold 0.8).
+
+```java
+Lumberjack.FILTERS.add(new SpamFilter(16, 0.8));
+```
+
+**StackDepthFilter** — rejects log calls whose call stack exceeds a maximum depth. Uses `StackWalker` with a bounded `limit()` so cost is O(maxDepth), not O(full stack).
+
+```java
+Lumberjack.FILTERS.add(new StackDepthFilter(30));
+```
+
+**CallerFilter** — suppresses log calls originating from specific classes.
+
+```java
+Lumberjack.FILTERS.add(new CallerFilter(NoisyHelper.class, VerboseLib .class));
+```
 
 ### `timber:level` mojo
 
-Bind to an early phase to make `timber.level` available to later plugins (e.g. surefire's `systemPropertyVariables`):
+Bind to an early phase so `timber.level` is available to downstream plugins:
 
 ```xml
 
@@ -117,5 +112,3 @@ Bind to an early phase to make `timber.level` available to later plugins (e.g. s
 </configuration>
 </plugin>
 ```
-
-The mojo also logs `Output level: N` at INFO so the detected value appears in the build log.
