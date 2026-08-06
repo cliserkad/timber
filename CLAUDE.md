@@ -17,7 +17,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Always document architectural and implementation analysis, insights, and plans as .md files in /docs
 - Regularly update existing files, especially CLAUDE.md, README.md and /docs/*
-- Preserve the history of the project by continuously moving descriptions of modifications to /docs/history
 - Limit scope creep of each documentation file by externalizing and linking to non-essential sections in new .md files
 - Add inline // FIXME comments where anti-patterns or red flags are detected
 - Add inline // TODO comments where future code expansion is expected
