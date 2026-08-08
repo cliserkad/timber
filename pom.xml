@@ -28,7 +28,7 @@
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
-				<version>3.5.1</version>
+				<version>3.9.0</version>
 				<configuration>
 					<java>
 						<eclipse>
@@ -46,7 +46,7 @@
 				<!-- This plugin allows us to use dynamic versions in the parent pom, and deploy as normal -->
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>flatten-maven-plugin</artifactId>
-				<version>1.7.3</version>
+				<version>1.8.0</version>
 				<configuration>
 					<updatePomFile>true</updatePomFile>
 					<flattenMode>resolveCiFriendliesOnly</flattenMode>
@@ -114,7 +114,7 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>6.1.0</version>
+			<version>6.1.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
