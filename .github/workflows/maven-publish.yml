@@ -8,9 +8,15 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      # read access for the checkout step
+      contents: read
+      # write access for the deploy step; the repository default is read-only,
+      # which makes GitHub Packages answer 403
+      packages: write
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
