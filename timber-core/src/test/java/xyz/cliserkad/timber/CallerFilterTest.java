@@ -48,13 +48,12 @@ public class CallerFilterTest {
 	}
 
 	@Test
-	public void replacesExistingCallerFilter() {
+	public void doesNotReplaceExistingCallerFilter() {
 		FilterSet set = new FilterSet();
 		set.add(new CallerFilter(CallerFilterTest.class));
 		set.add(new CallerFilter(HelloWorldTest.class));
 
-		AttributeMap attrs = new AttributeMap();
-		assertTrue(set.isAllowed(new LogEvent("test")), "second registration should replace the first");
+		assertFalse(set.isAllowed(new LogEvent("test")), "second registration should not replace the first.");
 	}
 
 	@Test

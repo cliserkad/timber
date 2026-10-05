@@ -1,27 +1,40 @@
 package xyz.cliserkad.timber;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A collection of {@link Filter} and {@link IndependentFilter} instances. Criterion-based filters are keyed by their
- * criterion type; at most one per type is active. Independent filters are keyed by their concrete class; at most one
- * per class is active.
+ * criterion type.
  * <p>
  * Criterion-based filters whose criterion type is absent from a given {@link AttributeMap} are skipped. Independent
  * filters are always evaluated.
  */
 public class FilterSet {
 
-	private final HashMap<Class<?>, Filter<?>> filters = new HashMap<>();
+	private final Map<Class<?>, Set<Filter<?>>> filters = new HashMap<>();
 
 	/**
-	 * Registers a criterion-based {@code filter}, keyed by {@link Filter#criterionType()}. Replaces any previously
-	 * registered filter for the same criterion type.
+	 * Registers a criterion-based {@code filter}, keyed by {@link Filter#criterionType()}.
 	 *
 	 * @param filter the filter to register; must not be {@code null}
 	 */
 	public void add(Filter<?> filter) {
-		filters.put(filter.criterionType(), filter);
+		Set<Filter<?>> filterSet = filters.get(filter.criterionType());
+		if(filterSet == null) {
+			filterSet = new HashSet<>();
+			filters.put(filter.criterionType(), filterSet);
+		}
+		filterSet.add(filter);
+	}
+
+	public void remove(Filter<?> filter) {
+		final Set<Filter<?>> filterSet = filters.get(filter.criterionType());
+		if(filterSet == null)
+			return;
+		filterSet.remove(filter);
 	}
 
 	/**
@@ -32,17 +45,20 @@ public class FilterSet {
 	 * @return {@code true} if all applicable filters pass, {@code false} otherwise
 	 */
 	public boolean isAllowed(LogEvent event) {
-		Object attr = null;
-		for(var entry : filters.entrySet()) {
-			// IndependentFilters filter against all log events
-			if(entry.getValue() instanceof IndependentFilter filter) {
-				if(!filter.isAllowed(event))
+		Set<Filter<?>> matchingFilters;
+
+		// test IndependentFilters first
+		if((matchingFilters = filters.get(LogEvent.class)) != null)
+			for(Filter<?> filter : filters.get(LogEvent.class))
+				if(!checkFilter(filter, event))
 					return false;
-			} else if((attr = event.attributes.get(entry.getKey())) != null) {
-				if(!checkFilter(entry.getValue(), attr))
-					return false;
-			}
-		}
+
+		for(Class<?> attributeType : event.attributes.types())
+			if((matchingFilters = filters.get(attributeType)) != null)
+				for(Filter<?> filter : matchingFilters)
+					if(!checkFilter(filter, event.attributes.get(attributeType)))
+						return false;
+
 		return true;
 	}
 

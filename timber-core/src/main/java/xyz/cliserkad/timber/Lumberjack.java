@@ -74,7 +74,6 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 
 		LogEvent event = new LogEvent(args);
 		event.attributes.put(MavenLevelFilter.Level.fromSFL4JLevel(level));
-		event.attributes.put(event.toString());
 
 		if(!isAllowed(event)) {
 			return;
@@ -110,8 +109,8 @@ public class Lumberjack implements InvocationHandler, ILoggerFactory {
 
 	/**
 	 * Walks the current thread's stack to extract the caller's file name and line number. Index 3 skips
-	 * {@code getStackTrace}, {@code logCallsiteInfo}, {@code log}, and lands on the actual call site. The thread name
-	 * is included when not on the main thread.
+	 * {@code getStackTrace}, {@code logCallsiteInfo}, {@code log}, and finishes on the actual call site. The thread
+	 * name is included when not on the main thread.
 	 */
 	private static String logCallsiteInfo() {
 		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();

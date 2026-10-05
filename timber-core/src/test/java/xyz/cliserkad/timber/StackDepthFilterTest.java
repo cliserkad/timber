@@ -52,12 +52,12 @@ public class StackDepthFilterTest {
 	}
 
 	@Test
-	public void replacesExistingFilterOfSameClass() {
+	public void doesNotReplaceExistingFilterOfSameClass() {
 		FilterSet set = new FilterSet();
 		set.add(new StackDepthFilter(0));
 		set.add(new StackDepthFilter(Integer.MAX_VALUE));
 
-		assertTrue(set.isAllowed(new LogEvent()), "second registration should replace the first");
+		assertFalse(set.isAllowed(new LogEvent()), "second registration should not replace the first");
 	}
 
 }

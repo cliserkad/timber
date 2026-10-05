@@ -1,6 +1,7 @@
 package xyz.cliserkad.timber;
 
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * A type-keyed map that stores at most one value per concrete runtime type.
@@ -58,6 +59,10 @@ public class AttributeMap {
 	/** Returns {@code true} if no values have been stored. */
 	public boolean isEmpty() {
 		return map.isEmpty();
+	}
+
+	public Set<Class<?>> types() {
+		return map.keySet();
 	}
 
 }
